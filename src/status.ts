@@ -32,8 +32,9 @@ export function readStatus(config: RigConfig): Status {
     installed: config.installed,
     lastBeat: lastBeat(),
     nights: nightsOnDisk(config.runsDir).map((night) => {
-      const { counts, badLines } = readNight(config.runsDir, night);
-      return { night, counts, badLines };
+      // A file gone since the listing reads as an empty night.
+      const n = readNight(config.runsDir, night);
+      return { night, counts: n?.counts ?? { ok: 0, retry: 0, fail: 0 }, badLines: n?.badLines ?? 0 };
     }),
   };
 }

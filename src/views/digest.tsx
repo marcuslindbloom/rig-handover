@@ -2,11 +2,9 @@ import type { DigestRow, Night } from '../digest/types.js';
 
 const dash = '—';
 
-function flags(row: DigestRow): string[] {
-  const out: string[] = [];
-  if (row.lastStatus === 'fail') out.push('fail');
-  if (row.retries >= 3) out.push('retries');
-  return out;
+// Marked rows carry a text cue too, not color only: previews are read as screenshots.
+function marked(row: DigestRow): boolean {
+  return row.lastStatus === 'fail' || row.retries >= 3;
 }
 
 export function Digest({ night }: { night: Night }) {
@@ -31,14 +29,14 @@ export function Digest({ night }: { night: Night }) {
           </thead>
           <tbody>
             {night.rows.map((row) => {
-              const f = flags(row);
+              const m = marked(row);
               return (
-                <tr class={f.length > 0 ? 'warn' : undefined}>
-                  <td>{f.length > 0 ? `! ${row.job}` : row.job}</td>
+                <tr class={m ? 'warn' : undefined}>
+                  <td>{m ? `! ${row.job}` : row.job}</td>
                   <td>{row.owner ?? dash}</td>
                   <td>{row.runs}</td>
                   <td>{row.retries}</td>
-                  <td>{f.length > 0 ? `${row.lastStatus} · ${f.join(", ")}` : row.lastStatus}</td>
+                  <td>{row.retries >= 3 ? `${row.lastStatus} · ${row.retries} retries` : row.lastStatus}</td>
                   <td>{row.lastError ?? dash}</td>
                   <td>{row.firstAt}</td>
                   <td>{row.lastAt}</td>
