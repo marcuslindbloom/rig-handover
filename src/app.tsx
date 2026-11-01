@@ -4,6 +4,7 @@ import { readNight } from './digest/read.js';
 import { loadConfig, type RigConfig } from './config.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
+import { Digest, NoDigest } from './views/digest.js';
 import { Layout } from './views/layout.js';
 import { StatusBoard } from './views/status.js';
 
@@ -19,6 +20,25 @@ export function createApp(config: RigConfig = loadConfig()) {
       </Layout>,
     ),
   );
+
+  // The page and the JSON read the same night the same way, so they can't disagree (ADR 0001).
+  app.get('/digest/:night', (c) => {
+    const id = c.req.param('night');
+    const night = isNight(id) ? readNight(config.runsDir, id) : null;
+    if (!night) {
+      return c.html(
+        <Layout title="digest" lane={lane()}>
+          <NoDigest night={id} />
+        </Layout>,
+        404,
+      );
+    }
+    return c.html(
+      <Layout title={`digest ${night.night}`} lane={lane()}>
+        <Digest night={night} />
+      </Layout>,
+    );
+  });
 
   app.get('/api/digest/:night', (c) => {
     const night = c.req.param('night');
