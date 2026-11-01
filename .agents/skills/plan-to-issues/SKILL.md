@@ -14,8 +14,8 @@ in a shell this agent can run.
 2. Draft the split as a table: title · plan section · scope · done when · blocked by.
    One issue per unit of work.
 3. **Stop and show the table to the human.** Publish nothing until they approve it.
-4. Ask the human what every issue here must carry (fields, labels, wording), unless it is
-   already written down in this session or in the repo.
+4. Every issue carries the shape under "Issue shape" below. Ask the human only for anything
+   beyond it.
 5. Create each issue in dependency order, so blocked-by can cite real numbers:
 
    ```sh
@@ -29,6 +29,28 @@ Closing one, with the closing comment from AGENTS.md:
 ```sh
 gh issue close <n> -c "<closing comment>"
 ```
+
+## Issue shape
+
+Every issue here carries, in this order:
+
+```md
+Source: plan.md § <n>
+
+## Scope
+<what to build, with the plan's rules for it>
+
+## Done when
+<the plan's done condition, word for word>
+
+## Blocked by
+<#n of each issue it needs, or —; name anything outside the repo it waits on, e.g. a review>
+```
+
+- Label: `plan:<plan name from plan.md's frontmatter>`. Create it first if it is missing.
+- One issue per plan section or subsection (`§ 2a` is its own issue). A step that waits on
+  someone outside the repo (a review) stays open until they have confirmed, and blocks what
+  comes after it.
 
 ## No `gh`
 

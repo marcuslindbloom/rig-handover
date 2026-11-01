@@ -27,8 +27,18 @@ Read first: `docs/vision.md`, `docs/styleguide.md`. Decisions: `docs/adr/`.
    commit: <sha or "none">
    ```
 
+   Commits say `refs #n`, not `closes #n`: a push that closes the issue skips the closing
+   comment. Close it with `gh issue close <n> -c "<closing comment>"`.
+
 5. An issue is closed only when its "Done when" holds. If it can't hold yet, leave it open and
    say what it waits on.
+
+## Previews
+
+A preview (ADR 0003) is built and deployed by the `preview` workflow to GitHub Pages, never
+committed: `gh workflow run preview.yml -f night=<night> -f with_marker=true` for the review
+copy (needs the repo secret `LANE_MARKER`), then `-f with_marker=false` over the same link once
+the review is in. Check the link without signing in before you send it.
 
 ## Skills
 
