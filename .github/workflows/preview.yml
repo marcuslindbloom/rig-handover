@@ -1,0 +1,56 @@
+# Plan morning-digest § 3 and § 4. Builds the digest preview in CI and deploys it to GitHub
+# Pages as an artifact, so the page never lands in git history (ADR 0003). Run with
+# with_marker=true for the review copy, then with_marker=false to take the marker off.
+name: preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      night:
+        description: Night to preview
+        default: '2026-10-28'
+      with_marker:
+        description: Show the lane marker (secret LANE_MARKER) in the banner
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Save the page
+        env:
+          LANE_MARKER: ${{ inputs.with_marker && secrets.LANE_MARKER || '' }}
+          NIGHT: ${{ inputs.night }}
+        run: |
+          echo "$NIGHT" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+          pnpm start > rig.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8787/health > /dev/null && break; sleep 1; done
+          mkdir -p _site
+          curl -sf "http://localhost:8787/digest/$NIGHT" -o _site/index.html
+          kill %1
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          retention-days: 1
+      - id: deploy
+        uses: actions/deploy-pages@v4
